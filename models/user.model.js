@@ -1,24 +1,27 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+const profileSchema = new mongoose.Schema(
+  {
+    displayName: { type: String, default: "New User" },
+    avatar: {
+      type: String,
+      default:
+        "https://res.cloudinary.com/dwaldcj4v/image/upload/v1752823047/uploads/image-1752823094483.jpg",
+    },
+    publicId: String,
+    bio: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
-    profilePicture: { type: String, default: "" },
-    coverPicture: { type: String, default: "" },
-    followers: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "User",
-      default: [],
-    },
-    following: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "User",
-      default: [],
-    },
+    profile: { type: profileSchema, default: () => ({}) },
   },
   { timestamps: true }
 );
