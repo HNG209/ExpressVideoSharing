@@ -37,6 +37,23 @@ export const login = async (req, res, next) => {
   }
 };
 
+export const updatePassword = async (req, res, next) => {
+  try {
+    const userId = req.user._id; // Lấy user từ token
+    const { currentPassword, newPassword } = req.body;
+
+    const result = await userService.updatePasswordService(
+      userId,
+      currentPassword,
+      newPassword
+    );
+
+    res.status(200).json({ message: "Change password successful", result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const refreshToken = async (req, res, next) => {
   try {
     const result = await userService.refreshAccessToken(req.body.refreshToken);

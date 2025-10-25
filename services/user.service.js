@@ -20,12 +20,23 @@ export const registerUser = async (data) => {
 
 export const updateProfileService = async (userId, data, file) => {
   let avatarUrl, publicId;
+
+  // Lấy thông tin người dùng hiện tại
+  const user = await User.findById(userId);
+  if (!user) throw new AppError(404, "User not found");
+
+  // Nếu có file mới được tải lên
   if (file && file.buffer) {
-    // upload buffer bằng upload_stream để không cần lưu file
+    // Xóa avatar cũ nếu có
+    if (user.profile.publicId) {
+      await cloudinary.uploader.destroy(user.profile.publicId);
+    }
+
+    // Upload avatar mới
     const uploadFromBuffer = (buffer) =>
       new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: "avatars", resource_type: "image" }, // tuỳ chỉnh
+          { folder: "avatars", resource_type: "image" },
           (error, result) => {
             if (error) return reject(error);
             resolve(result);
@@ -35,21 +46,22 @@ export const updateProfileService = async (userId, data, file) => {
       });
 
     const result = await uploadFromBuffer(file.buffer);
-    avatarUrl = result.secure_url; // hoặc result.public_id lưu để xoá sau
+    avatarUrl = result.secure_url;
     publicId = result.public_id;
   }
 
+  // Cập nhật thông tin người dùng
   const updateObj = {
     profile: data,
   };
   if (avatarUrl) updateObj.profile.avatar = avatarUrl;
   if (publicId) updateObj.profile.publicId = publicId;
 
-  const user = await User.findByIdAndUpdate(userId, updateObj, {
+  const updatedUser = await User.findByIdAndUpdate(userId, updateObj, {
     new: true,
   }).select("-password");
 
-  return user;
+  return updatedUser;
 };
 
 export const loginUser = async (data) => {
@@ -74,6 +86,22 @@ export const loginUser = async (data) => {
     accessToken,
     refreshToken,
   };
+};
+
+export const updatePasswordService = async (userId, currentPassword, newPassword) => {
+  // Lấy thông tin người dùng hiện tại
+  const user = await User.findById(userId);
+  if (!user) throw new AppError(404, "User not found");
+
+  // Kiểm tra mật khẩu hiện tại
+  const isMatch = await user.matchPassword(currentPassword);
+  if (!isMatch) throw new AppError(401, "Current password is incorrect");
+
+  // Cập nhật mật khẩu mới
+  user.password = newPassword;
+  await user.save();
+
+  return { message: "Password updated successfully" };
 };
 
 export const refreshAccessToken = async (token) => {
