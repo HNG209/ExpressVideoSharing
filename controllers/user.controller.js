@@ -75,6 +75,24 @@ export const getProfile = async (req, res, next) => {
   }
 };
 
+export const searchUser = async (req, res, next) => {
+  try {
+    const id = req.user._id;
+    const { query } = req.query; // Lấy từ khóa tìm kiếm từ query string
+    const page = parseInt(req.query.page) || 1; // Trang hiện tại (mặc định là 1)
+    const limit = parseInt(req.query.limit) || 10; // Số lượng bản ghi mỗi trang (mặc định là 10)
+
+    if (!query) {
+      return res.status(400).json({ message: "Query parameter is required" });
+    }
+
+    const result = await userService.searchUserService(id, query, page, limit);
+    res.status(200).json({ message: "Users retrieved successfully", result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const testAuth = async (req, res, next) => {
   try {
     res.status(200).json({

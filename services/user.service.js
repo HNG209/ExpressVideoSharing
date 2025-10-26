@@ -7,6 +7,7 @@ import {
 import { AppError } from "../utils/appError.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
+import { Follow } from "../models/follow.model.js";
 
 export const registerUser = async (data) => {
   const { username, email, password } = data;
@@ -88,7 +89,11 @@ export const loginUser = async (data) => {
   };
 };
 
-export const updatePasswordService = async (userId, currentPassword, newPassword) => {
+export const updatePasswordService = async (
+  userId,
+  currentPassword,
+  newPassword
+) => {
   // Lấy thông tin người dùng hiện tại
   const user = await User.findById(userId);
   if (!user) throw new AppError(404, "User not found");
@@ -102,6 +107,55 @@ export const updatePasswordService = async (userId, currentPassword, newPassword
   await user.save();
 
   return { message: "Password updated successfully" };
+};
+
+export const searchUserService = async (
+  currentUserId,
+  query,
+  page = 1,
+  limit = 10
+) => {
+  const skip = (page - 1) * limit;
+
+  // Tìm kiếm user theo username hoặc displayName, loại bỏ người dùng hiện tại
+  const users = await User.find({
+    _id: { $ne: currentUserId }, // Loại bỏ người dùng hiện tại
+    $or: [
+      { username: { $regex: query, $options: "i" } },
+      { "profile.displayName": { $regex: query, $options: "i" } },
+    ],
+  })
+    .skip(skip)
+    .limit(limit)
+    .select("username profile"); // Chỉ lấy các trường cần thiết
+
+  // Lấy danh sách những người mà currentUser đang theo dõi
+  const following = await Follow.find({ follower: currentUserId }).select(
+    "following"
+  );
+  const followingIds = following.map((f) => f.following.toString());
+
+  // Gắn trạng thái follow vào từng user
+  const usersWithFollowStatus = users.map((user) => ({
+    ...user.toObject(),
+    isFollowed: followingIds.includes(user._id.toString()), // Kiểm tra xem user có được theo dõi không
+  }));
+
+  // Tính tổng số kết quả
+  const total = await User.countDocuments({
+    _id: { $ne: currentUserId },
+    $or: [
+      { username: { $regex: query, $options: "i" } },
+      { "profile.displayName": { $regex: query, $options: "i" } },
+    ],
+  });
+
+  return {
+    users: usersWithFollowStatus,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
 };
 
 export const refreshAccessToken = async (token) => {
