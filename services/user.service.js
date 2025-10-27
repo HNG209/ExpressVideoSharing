@@ -135,10 +135,17 @@ export const searchUserService = async (
   );
   const followingIds = following.map((f) => f.following.toString());
 
+  // Lấy danh sách những người đang theo dõi currentUser
+  const followers = await Follow.find({ following: currentUserId }).select(
+    "follower"
+  );
+  const followerIds = followers.map((f) => f.follower.toString());
+
   // Gắn trạng thái follow vào từng user
   const usersWithFollowStatus = users.map((user) => ({
     ...user.toObject(),
-    isFollowed: followingIds.includes(user._id.toString()), // Kiểm tra xem user có được theo dõi không
+    isFollowed: followingIds.includes(user._id.toString()), // Kiểm tra xem user có được currentUser theo dõi không
+    isFollower: followerIds.includes(user._id.toString()), // Kiểm tra xem user có đang theo dõi currentUser không
   }));
 
   // Tính tổng số kết quả

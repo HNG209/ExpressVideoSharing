@@ -16,8 +16,8 @@ export const followUserService = async (followerId, followingId) => {
 
   // Tạo follow record
   const follow = await Follow.create({
-    follower: followerId,
-    following: followingId,
+    follower: followerId, // người follow
+    following: followingId, // người được follow
   });
   return follow;
 };

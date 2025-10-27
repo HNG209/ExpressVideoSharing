@@ -57,7 +57,7 @@ export const updatePassword = async (req, res, next) => {
 export const refreshToken = async (req, res, next) => {
   try {
     const result = await userService.refreshAccessToken(req.body.refreshToken);
-    console.log("Refreshed token:", result);
+    // console.log("Refreshed token:", result);
     res.status(200).json({ message: "Token refreshed successfully", result });
   } catch (error) {
     next(error);
