@@ -35,3 +35,9 @@ export const createPostService = async (userId, { caption, tags }, file) => {
 
   return post;
 };
+
+export const fetchUserPostService = async (userId) => {
+  const posts = await Post.find({ author: userId });
+
+  return posts;
+};

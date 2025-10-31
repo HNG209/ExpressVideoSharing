@@ -30,3 +30,14 @@ export const createPost = async (req, res, next) => {
     next(error);
   }
 };
+
+export const fetchUserPost = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const result = await postService.fetchUserPostService(userId);
+
+    res.status(200).json({ message: "Post retrieved", result });
+  } catch (error) {
+    next(error);
+  }
+};

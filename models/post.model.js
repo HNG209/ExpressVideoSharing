@@ -25,4 +25,6 @@ const postSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+postSchema.index({ author: 1 }); // tăng tốc tìm kiếm post của user
+
 export const Post = mongoose.model("Post", postSchema);

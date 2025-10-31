@@ -22,6 +22,9 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     profile: { type: profileSchema, default: () => ({}) },
+    likeCount: { type: Number, default: 0 },
+    followerCount: { type: Number, default: 0 },
+    followingCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
