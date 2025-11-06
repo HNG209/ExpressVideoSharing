@@ -5,6 +5,7 @@ import { connectDB } from "./config/db.js";
 import userRoutes from "./routes/user.route.js";
 import followRoutes from "./routes/follow.route.js";
 import postRoutes from "./routes/post.route.js";
+import likeRoutes from "./routes/like.route.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 dotenv.config();
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 app.use("/api", followRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/likes", likeRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Video Sharing App API");

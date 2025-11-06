@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import { AppError } from "../utils/appError.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
+import Like from "../models/like.model.js";
 
 export const createPostService = async (userId, { caption, tags }, file) => {
   if (!file || !file.buffer) throw new AppError(400, "Video file is required");
@@ -36,8 +37,22 @@ export const createPostService = async (userId, { caption, tags }, file) => {
   return post;
 };
 
-export const fetchUserPostService = async (userId) => {
-  const posts = await Post.find({ author: userId });
+export const fetchUserPostService = async (userId, authorId = null) => {
+  const posts = await Post.find({ author: authorId || userId })
+    .populate("author", "username profile.avatar profile.displayName")
+    .sort({ createdAt: -1 });
 
-  return posts;
+  // gán trường isLikedByCurrentUser cho mỗi post, tìm trong model Like
+  const likes = await Like.find({
+    user: userId,
+    onModel: "post",
+    target: { $in: posts.map((post) => post._id) },
+  });
+  const likedPostIds = likes.map((like) => like.target.toString());
+
+  return posts.map((post) => {
+    const postObj = post.toObject();
+    postObj.isLikedByCurrentUser = likedPostIds.includes(post._id.toString());
+    return postObj;
+  });
 };

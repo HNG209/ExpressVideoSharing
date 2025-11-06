@@ -31,10 +31,11 @@ export const createPost = async (req, res, next) => {
   }
 };
 
-export const fetchUserPost = async (req, res) => {
+export const fetchUserPost = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const result = await postService.fetchUserPostService(userId);
+    const authorId = req.query.authorId || null;
+    const result = await postService.fetchUserPostService(userId, authorId);
 
     res.status(200).json({ message: "Post retrieved", result });
   } catch (error) {
