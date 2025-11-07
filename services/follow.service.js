@@ -14,6 +14,9 @@ export const followUserService = async (followerId, followingId) => {
     throw new AppError(404, "User to follow not found");
   }
 
+  // Tăng followerCount cho user được theo dõi
+  await User.findByIdAndUpdate(followingId, { $inc: { followerCount: 1 } });
+
   // Tạo follow record
   const follow = await Follow.create({
     follower: followerId, // người follow
@@ -28,6 +31,14 @@ export const unfollowUserService = async (followerId, followingId) => {
     follower: followerId,
     following: followingId,
   });
+
+  // Giảm followerCount cho user được bỏ theo dõi
+  if (result) {
+    await User.findByIdAndUpdate(followingId, { $inc: { followerCount: -1 } });
+  } else {
+    throw new AppError(404, "Follow relationship not found");
+  }
+
   if (!result) {
     throw new AppError(404, "Follow relationship not found");
   }

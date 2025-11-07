@@ -6,6 +6,7 @@ import userRoutes from "./routes/user.route.js";
 import followRoutes from "./routes/follow.route.js";
 import postRoutes from "./routes/post.route.js";
 import likeRoutes from "./routes/like.route.js";
+import commentRoutes from "./routes/comment.route.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 dotenv.config();
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use(express.json({ limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 
+app.use("/api/comments", commentRoutes);
 app.use("/api", followRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);
