@@ -42,3 +42,14 @@ export const fetchUserPost = async (req, res, next) => {
     next(error);
   }
 };
+
+export const fetchOtherUserPost = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const authorId = req.params.userId;
+    const result = await postService.fetchUserPostService(userId, authorId);
+    res.status(200).json({ message: "Post retrieved", result });
+  } catch (error) {
+    next(error);
+  }
+};

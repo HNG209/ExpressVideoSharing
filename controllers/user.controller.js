@@ -75,6 +75,19 @@ export const getProfile = async (req, res, next) => {
   }
 };
 
+export const getUserProfile = async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const id = req.user._id;
+    const result = await userService.getUserProfileService(userId, id);
+    res
+      .status(200)
+      .json({ message: "User profile retrieved successfully", result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const searchUser = async (req, res, next) => {
   try {
     const id = req.user._id;

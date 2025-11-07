@@ -109,6 +109,27 @@ export const updatePasswordService = async (
   return { message: "Password updated successfully" };
 };
 
+export const getUserProfileService = async (userId, currentUserId) => {
+  const user = await User.findById(userId).select("-password");
+  if (!user) throw new AppError(404, "User not found");
+
+  // thêm trạng thái theo dõi isFollower và isFollowed
+  const isFollowed = await Follow.exists({
+    follower: currentUserId,
+    following: userId,
+  });
+
+  const isFollower = await Follow.exists({
+    follower: userId,
+    following: currentUserId,
+  });
+
+  user._doc.isFollowed = isFollowed ? true : false;
+  user._doc.isFollower = isFollower ? true : false;
+
+  return user;
+};
+
 export const searchUserService = async (
   currentUserId,
   query,
@@ -172,7 +193,7 @@ export const refreshAccessToken = async (token) => {
   try {
     decoded = verifyToken(token, "refresh");
   } catch {
-    throw new AppError(403, "Invalid refresh token");
+    throw new AppError(401, "Invalid refresh token");
   }
 
   const user = await User.findById(decoded.id);

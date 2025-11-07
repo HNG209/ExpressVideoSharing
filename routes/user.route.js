@@ -8,6 +8,7 @@ import {
   updateProfile,
   updatePassword,
   searchUser,
+  getUserProfile,
 } from "../controllers/user.controller.js";
 import { authenticateToken } from "../middlewares/auth.middleware.js";
 import { uploadSingle } from "../middlewares/upload.middleware.js";
@@ -22,5 +23,6 @@ router.put("/password", authenticateToken, updatePassword);
 router.post("/refresh", refreshToken);
 router.get("/me", authenticateToken, getProfile);
 router.get("/test", authenticateToken, testAuth);
+router.get("/:userId", authenticateToken, getUserProfile);
 
 export default router;
