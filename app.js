@@ -7,6 +7,7 @@ import followRoutes from "./routes/follow.route.js";
 import postRoutes from "./routes/post.route.js";
 import likeRoutes from "./routes/like.route.js";
 import commentRoutes from "./routes/comment.route.js";
+import authRoutes from "./routes/auth.route.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.use("/api", followRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/likes", likeRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Video Sharing App API");

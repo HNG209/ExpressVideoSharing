@@ -25,6 +25,11 @@ const userSchema = new mongoose.Schema(
     likeCount: { type: Number, default: 0 },
     followerCount: { type: Number, default: 0 },
     followingCount: { type: Number, default: 0 },
+    secret: {
+      value: String,
+      verify: { type: Boolean, default: false },
+      // default: null,
+    },
   },
   { timestamps: true }
 );
