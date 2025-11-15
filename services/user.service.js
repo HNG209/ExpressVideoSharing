@@ -8,6 +8,7 @@ import { AppError } from "../utils/appError.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
 import { Follow } from "../models/follow.model.js";
+import { verifyOTPService } from "./auth.service.js";
 
 export const registerUser = async (data) => {
   const { username, email, password } = data;
@@ -66,7 +67,7 @@ export const updateProfileService = async (userId, data, file) => {
 };
 
 export const loginUser = async (data) => {
-  const { username, password } = data;
+  const { username, password, otp } = data;
 
   const user = await User.findOne({ username });
   if (!user) throw new AppError(404, "User not found");
@@ -74,16 +75,22 @@ export const loginUser = async (data) => {
   const isMatch = await user.matchPassword(password);
   if (!isMatch) throw new AppError(401, "Invalid password");
 
+  if (user.secret.verify) {
+    // Nếu secret đã được verify thì bắt buộc có OTP
+    if (!otp) {
+      throw new AppError(401, "Required OTP");
+    }
+
+    const isValid = await verifyOTPService(user._id, otp);
+
+    if (!isValid) throw new AppError(401, "OTP error");
+  }
+
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
   return {
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      profile: user.profile,
-    },
+    user,
     accessToken,
     refreshToken,
   };

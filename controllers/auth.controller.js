@@ -32,12 +32,28 @@ export const verifyOTP = async (req, res, next) => {
   }
 };
 
-export const activateOTP = async (req, res, next) => {
+export const disableTOTP = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const token = req.params.token;
+
+    const result = await authService.disableTOTPService(userId, token);
+
+    return res.status(200).json({
+      message: "TOTP disabled",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const enableTOTP = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const token = req.body.token;
 
-    const result = await authService.activateTOTPService(userId, token);
+    const result = await authService.enableTOTPService(userId, token);
 
     return res.status(200).json({
       message: "TOTP enabled",

@@ -27,7 +27,8 @@ const userSchema = new mongoose.Schema(
     followingCount: { type: Number, default: 0 },
     secret: {
       value: String,
-      verify: { type: Boolean, default: false },
+      uri: String,
+      verify: Boolean,
       // default: null,
     },
   },

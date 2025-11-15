@@ -11,6 +11,7 @@ export const generateSecretService = async (userId, email) => {
 
   await User.findByIdAndUpdate(userId, {
     "secret.value": secret,
+    "secret.uri": keyUri,
     "secret.verify": false,
   });
 
@@ -18,17 +19,50 @@ export const generateSecretService = async (userId, email) => {
 };
 
 export const verifyOTPService = async (userId, token) => {
-  const user = User.findById(userId);
+  const user = await User.findById(userId);
   if (!user) throw new AppError(404, "User not found");
 
   if (!user.secret) return false;
   return authenticator.check(token, user.secret.value);
 };
 
-export const activateTOTPService = async (userId, token) => {
-  if (!verifyOTP(userId, token)) throw new AppError(401, "Token error");
+export const enableTOTPService = async (userId, token) => {
+  if (!verifyOTPService(userId, token)) throw new AppError(401, "Token error");
 
   await User.findByIdAndUpdate(userId, { "secret.verify": true });
+
+  return true;
+};
+
+export const disableTOTPService = async (userId, token) => {
+  const user = await User.findById(userId);
+  if (!user) throw new AppError(404, "Không tìm thấy người dùng.");
+
+  if (!user.secret.verify) {
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $unset: { secret: "" }, // $unset: { fieldName: "" } sẽ xóa field đó
+      },
+      { new: true } // Tùy chọn: trả về tài liệu sau khi cập nhật
+    );
+    return true;
+  }
+
+  if (!verifyOTPService(userId, token)) throw new AppError(401, "Token error");
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      $unset: { secret: "" }, // $unset: { fieldName: "" } sẽ xóa field đó
+    },
+    { new: true } // Tùy chọn: trả về tài liệu sau khi cập nhật
+  );
+
+  // Kiểm tra nếu người dùng không tồn tại
+  if (!updatedUser) {
+    throw new AppError(404, "Không tìm thấy người dùng.");
+  }
 
   return true;
 };
