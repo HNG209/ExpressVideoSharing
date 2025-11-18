@@ -1,7 +1,8 @@
 export class AppError extends Error {
-  constructor(statusCode, message) {
+  constructor(statusCode, message, errorCode) {
     super(message);
-    this.statusCode = statusCode;
+    this.errorCode = errorCode; // Mã lỗi, tự định nghĩa theo nhu cầu, có thể thêm nhiều mã trong tương lai
+    this.statusCode = statusCode; // Status code HTTP
     this.isOperational = true;
   }
 }

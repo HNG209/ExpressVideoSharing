@@ -1,6 +1,7 @@
 import { authenticator } from "otplib";
 import { User } from "../models/user.model.js";
 import { AppError } from "../utils/appError.js";
+import ErrorCode from "../enums/ErrorCode.js";
 
 const APP_NAME = "VideoSharingApp";
 
@@ -27,7 +28,8 @@ export const verifyOTPService = async (userId, token) => {
 };
 
 export const enableTOTPService = async (userId, token) => {
-  if (!verifyOTPService(userId, token)) throw new AppError(401, "Token error");
+  if (!verifyOTPService(userId, token))
+    throw new AppError(401, "OTP không hợp lệ", ErrorCode.OTP_ERROR);
 
   await User.findByIdAndUpdate(userId, { "secret.verify": true });
 
@@ -36,7 +38,12 @@ export const enableTOTPService = async (userId, token) => {
 
 export const disableTOTPService = async (userId, token) => {
   const user = await User.findById(userId);
-  if (!user) throw new AppError(404, "Không tìm thấy người dùng.");
+  if (!user)
+    throw new AppError(
+      404,
+      "Không tìm thấy người dùng.",
+      ErrorCode.USER_NOT_FOUND
+    );
 
   if (!user.secret.verify) {
     await User.findByIdAndUpdate(
@@ -49,7 +56,8 @@ export const disableTOTPService = async (userId, token) => {
     return true;
   }
 
-  if (!verifyOTPService(userId, token)) throw new AppError(401, "Token error");
+  if (!(await verifyOTPService(userId, token)))
+    throw new AppError(401, "OTP không hợp lệ", ErrorCode.OTP_ERROR);
 
   const updatedUser = await User.findByIdAndUpdate(
     userId,
@@ -61,7 +69,11 @@ export const disableTOTPService = async (userId, token) => {
 
   // Kiểm tra nếu người dùng không tồn tại
   if (!updatedUser) {
-    throw new AppError(404, "Không tìm thấy người dùng.");
+    throw new AppError(
+      404,
+      "Không tìm thấy người dùng.",
+      ErrorCode.USER_NOT_FOUND
+    );
   }
 
   return true;
